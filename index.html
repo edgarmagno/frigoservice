@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consumo de Frigobar</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <header>
+        <h2>Número do Apto:</h2>
+        <form id="form-apartamento">
+            <label for="num-apartamento"></label>
+            <input type="text" id="num-apartamento" name="num-apartamento" required>
+        </form>
+    </header>
+
+    <div class="container">
+        <div id="item-list"></div>
+        <div id="total">Total: R$ 0.00</div>
+    </div>
+
+    <div class="fixed-footer" id="added-items-footer">
+
+        <div id="added-items-list"> sassa </div>
+        <button class="share-button" onclick="shareOnWhatsApp()">
+            <img src="https://static-00.iconduck.com/assets.00/share-icon-2048x1911-60w04qpe.png" alt="WhatsApp">
+            
+        </button>
+    </div>
+
+    <script>
+        const items = [
+            { name: 'Água Com Gás', price: 10.00 },
+            { name: 'Água Sem Gás', price: 10.00 },
+            { name: 'Refrigerante', price: 9.00 },
+            { name: 'Cerveja Premium', price: 15.00 },
+            { name: 'Água de Côco', price: 9.00 },
+            { name: 'Suco de Fruta', price: 11.00 },
+            { name: 'Achocolatado', price: 9.00 },
+            { name: 'Batata Chips', price: 19.00 },
+            { name: 'Castanha de Caju', price: 11.00 },
+            { name: 'Mix Nuts', price: 10.00 },
+            { name: 'Chocolate', price: 10.00 },
+            { name: 'Chocolate Especial', price: 15.00 },
+            { name: 'Bananinha', price: 9.50 },
+            { name: 'Chiclete', price: 7.00 },
+            { name: 'Barra Nuts', price: 12.00 },
+            { name: 'Choco Biscuit', price: 10.00 },
+            { name: 'Fini', price: 7.00 },
+        ];
+
+        const itemList = document.getElementById('item-list');
+        const totalDiv = document.getElementById('total');
+        const addedItemsList = document.getElementById('added-items-list');
+        const itemQuantities = {};
+
+        function updateTotal() {
+            let total = 0;
+            for (const item in itemQuantities) {
+                const quantity = itemQuantities[item];
+                const price = items.find(i => i.name === item).price;
+                total += quantity * price;
+            }
+            totalDiv.textContent = `Total: R$ ${total.toFixed(2)}`;
+        }
+
+        function updateItemList() {
+            itemList.innerHTML = '';
+            
+            for (const item of items) {
+                if (!itemQuantities[item.name]) itemQuantities[item.name] = 0;
+                const row = document.createElement('div');
+                row.className = 'item-row';
+                row.innerHTML = `
+                    <div class="item-name">${item.name}</div>
+                    <div class="item-price">R$ ${item.price.toFixed(2)}</div>
+                    <div class="quantity-controls">
+                        <button class="quantity-button" onclick="updateQuantity('${item.name}', -1)">-</button>
+                        <span>${itemQuantities[item.name]}</span>
+                        <button class="quantity-button" onclick="updateQuantity('${item.name}', 1)">+</button>
+                    </div>
+                `;
+                itemList.appendChild(row);
+            }
+            updateTotal();
+            updateAddedItemsList();
+        }
+
+        function updateQuantity(itemName, change) {
+            itemQuantities[itemName] += change;
+            if (itemQuantities[itemName] < 0) itemQuantities[itemName] = 0;
+            updateItemList();
+        }
+
+        function updateAddedItemsList() {
+            addedItemsList.innerHTML = '';
+            for (const item in itemQuantities) {
+                if (itemQuantities[item] > 0) {
+                    const listItem = document.createElement('div');
+                    listItem.textContent = `${item}: ${itemQuantities[item]}`;
+                    addedItemsList.appendChild(listItem);
+                }
+            }
+        }
+
+        function shareOnWhatsApp() {
+            const aptoNumber = document.getElementById('num-apartamento').value;
+            if (!aptoNumber) {
+                alert('Por favor, insira o número do apartamento.');
+                return;
+            }
+            let message = `Apto: ${aptoNumber}\n`;
+            for (const item in itemQuantities) {
+                if (itemQuantities[item] > 0) {
+                    message += `${item}: ${itemQuantities[item]}\n`;
+                }
+            }
+            message += totalDiv.textContent;
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, '_blank');
+        }
+
+        document.getElementById('form-apartamento').addEventListener('submit', function(event) {
+            event.preventDefault();
+        });
+
+        updateItemList();
+    </script>
+
+</body>
+</html>
